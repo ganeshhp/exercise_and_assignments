@@ -1,0 +1,45 @@
+Exercise -2
+
+1) expose / browse application/service inside cotnainer using service resource
+
+# declare a service (declarative)
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: apache-svc
+  labels:
+    app: hello-apache
+    version: v1.1
+    env: prod
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    nodePort: 32500
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: hello-apache
+
+## deploy a service for an existing deployment, imperatively.
+
+  $ kubectl expose deployment webserver --port=80 --target-port=80 --type=NodePort --dry-run=client -o yaml > service.yml
+
+  $ vi service.yml
+
+## vaidate the file contents
+
+  $ sudo kubectl create -f service.yml
+
+2) validate replication controller and replica set resource differences.
+
+  $ kubectl describe <replication controller id>
+  $ kubectl describe <replica set id>
+
+3) make changes to deployment.yml file in image / replicas / label  and validate by deploying the resource.
+
+  $ kubectl create -f deployment.yml
+  $ kubectl apply -f deployment.yml
+
+

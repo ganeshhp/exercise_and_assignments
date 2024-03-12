@@ -1,0 +1,93 @@
+
+Exercise-1
+## First let's initiate the Kubenetes cluster.
+## Using Minikube , we will initiate a single node cluster.
+$ sudo minikube status
+$ sudo minikube start --driver=docker --force
+
+## wait for the cluster to start
+1) explore the Kube cluster.
+
+## config command gives us most of the information abt the k8s cluster.
+
+$ sudo kubectl config  
+
+## understand the config command options. 
+
+2) Explore kubectl command options.
+
+$ sudo kubectl get
+$ sudo kubectl apply
+$ sudo kubectl describe
+$ sudo kubectl create
+
+$ sudo kubectl explain
+ 
+
+3) validate kubeconfig file and kubectl config command options.
+   ~/.kube/config
+
+4) kubectl commands to query cluster components and deploy PODs
+
+  $ sudo kubectl cluster-info
+
+  $ sudo kubectl config get-contexts
+
+  $ sudo kubectl api-resources
+
+  $ sudo kubectl api-resources --namespaced=true / false
+
+  $ sudo kubectl explain pod | more
+
+  $ sudo kubectl get nodes
+
+  $ sudo kubectl describe node <nodename>
+
+  $ sudo kubectl run webserver --image=httpd:latest
+
+  $ sudo kubectl get pods
+
+  $ sudo kubectl describe pods
+
+## create POD objeccts using imperative command.
+
+$ sudo kubectl run webapp --image=httpd:latest --dry-run=client -o yaml
+
+$ sudo kubectl run webapp --image=httpd:latest --dry-run=server -o yaml > pod.yml
+
+$ vi pod.yml
+## make changes to the image information side the pod.yml
+## set the image value to httpd:2.4.57
+## save and exit
+
+$ sudo kubectl apply -f pod.yml
+
+$ sudo kubectl get pod/webapp -o yaml
+
+## observer the changes
+
+### create repicatin controller object using yaml file.
+
+$ nano rc.yml
+
+apiVersion: v1
+kind: ReplicationController
+metadata:
+   name: webserver-rc
+spec:
+   replicas: 3
+   selector:
+     app: webapp
+   template:
+     metadata:
+       labels:
+         app: webapp
+     spec:
+       containers:
+       - name: webapp
+         image: httpd:2.4.57
+         ports:
+         - containerPort: 8080
+
+## save and exit
+

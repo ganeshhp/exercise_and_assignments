@@ -1,0 +1,28 @@
+Exercise-1
+
+1) Deploy Container with network port mapping
+
+   $ sudo docker run -it -p 8000:80 apache2:custom
+
+   $ service apache2 start
+   $ service apache2 status
+
+2) Validate service availability on node-port
+
+   --> access http://localhost:8000 and validate web-service / application accessible on port 8000.
+
+3) Validate Network on Docker Host
+
+   $ sudo docker network ls
+
+4) create a custom network
+
+   $ sudo docker network create -d bridge mynetwork
+
+5) create container within custom network
+
+   $ sudo docker run -dt --net=mynetwork --name=mycontainer ubuntu:20.04 
+
+
+
+

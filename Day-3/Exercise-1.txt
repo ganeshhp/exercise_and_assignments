@@ -1,0 +1,14 @@
+## install / validate Docker compose
+
+$ docker-compose –v
+
+## clone the project to test compose.
+
+$ git clone https://github.com/ganeshhp/php_project.git
+
+$ cd php_project
+
+$ nano docker-compose.yml
+## exit
+
+$ docker-compose up -d
