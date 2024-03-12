@@ -27,7 +27,7 @@ Exercise-3
 
    $ docker commit container-id image-name:tag
 
-3) Note the docker intermediate container and image layer structure
+3) Note the docker image layer structure
 4) note the read-only and writable layers in container structure
 
 ## create a new network on Docker host
