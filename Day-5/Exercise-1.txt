@@ -1,0 +1,9 @@
+#Scale up / down replicas
+$ kubectl scale deployment webserver --replicas=4
+
+#Horizontal POD Autoscaler (HPA):
+#To AutoScale existing deployment object in cluster.
+
+$ kubectl autoscale deployment/my-deployment --min=2 --max=10
+
+$ kubectl autoscale deployment/my-deployment --max=10 --cpu-percent=80

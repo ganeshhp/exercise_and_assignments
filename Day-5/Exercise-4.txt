@@ -1,0 +1,74 @@
+Exercise-3
+
+
+1) storageclass
+
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: local-storage
+provisioner: kubernetes.io/local-path
+volumeBindingMode: WaitForFirstConsumer
+reclaimPolicy: Retain
+
+2) Deploy PV Claim and validate volume binding.
+
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: local-path-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+
+2) deploy POD with volume defination
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-with-volume
+spec:
+  containers:
+  - name: container
+    image: nginx:stable-alpine
+    volumeMounts:
+    - name: my-vol
+      mountPath: /my-vol
+    ports:
+    - containerPort: 80
+  volumes:
+  - name: my-vol
+    persistentVolumeClaim:
+      claimName: local-path-pvc
+
+$ sudo kubectl get pod,pv,pvc
+
+4) Use hostpath or local Persistent Volume
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: example-pv
+spec:
+  capacity:
+    storage: 1Gi
+  volumeMode: Filesystem
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  local:
+    path: /opt
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - node1
+
+

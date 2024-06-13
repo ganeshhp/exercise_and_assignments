@@ -1,0 +1,33 @@
+Exercise-2
+
+1) POD lifecycle
+
+   deploy a POD in custom namespace with manifest file.
+   $ kubectl run mypod --image=ganeshhp/webserver:07182023 --dry-run=client -o yaml > pod.yml
+
+
+2) Update the pod.yml file with below details.
+   Using readyness probe in a POD
+   ...
+   ..
+    containers:
+      - name: hello-world
+        image: ganeshhp/webserver:07182023
+        ports:
+        - containerPort: 80
+        livenessProbe:
+          tcpSocket:
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 5
+
+3) deploy POD with probes
+
+    $ kubectl apply -f pod.yml
+
