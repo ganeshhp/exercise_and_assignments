@@ -1,4 +1,5 @@
 ## creating Job API object
+### create file job-pod.yml
 
 apiVersion: batch/v1
 kind: Job
@@ -6,9 +7,9 @@ metadata:
   name: test-job
   namespace: webapp
 spec:
-  completions: 5
+  completions: 2
   parallelism: 1
-  backoffLimit: 4
+  backoffLimit: 2
   template:
     spec:
       restartPolicy: Never
@@ -17,3 +18,10 @@ spec:
         image: alpine:latest
         command: ["echo", "Hello World"]
         
+### create the job object using below command.
+
+$ kubectl create -f job-pod.yml
+
+$ kubectl get pods --namespace=webapp
+
+$ kubectl logs pod/<pod-name> --namespace=webapp
