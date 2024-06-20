@@ -1,45 +1,78 @@
 Exercise -2
 
-1) expose / browse application/service inside cotnainer using service resource
+### 1) Storage objects
 
-# declare a service (declarative)
+### create a new file as deploy-localvol.yml
+
+### create the deployment object and check the local storage object.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: local-web
+  namespace: webapp
+spec:
+  replicas: 2
+  selector:
+    matchLabels: 
+      app: local-web
+  template:
+    metadata:
+      labels:
+        app: local-web
+    spec:
+      containers:
+      - name: local-web
+        image: nginx
+        ports:
+          - name: web
+            containerPort: 80
+        volumeMounts:
+          - name: local
+            mountPath: /usr/share/nginx/html
+      volumes:
+      - name: local
+        hostPath:
+          path: /var/nginxserver
+
+### validate the web-app on the container by running below commands.
+
+$ kubectl get pods --namespace=webapp
+
+## create a index.html file in /var/nginxserver folder.
+
+$ echo "hello world" > /var/nginxserver/index.html
+
+### execute command in the container and validate if the webservice is up.
+ 
+$ kubectl exec -it pod/<pod-name> -- bin/bash
+
+$ curl localhost
+
+
+
+----------------
+
+### create a service of type nodeport to expose the deployment object
 
 apiVersion: v1
 kind: Service
 metadata:
-  name: apache-svc
-  labels:
-    app: hello-apache
-    version: v1.1
-    env: prod
+  creationTimestamp: null
+  name: local-web
 spec:
-  type: NodePort
   ports:
   - port: 80
-    nodePort: 32500
     protocol: TCP
     targetPort: 80
+    nodePort: 32000
   selector:
-    app: hello-apache
-
-## deploy a service for an existing deployment, imperatively.
-
-  $ kubectl expose deployment webserver --port=80 --target-port=80 --type=NodePort --dry-run=client -o yaml > service.yml
-
-  $ vi service.yml
-
-## vaidate the file contents
-
-  $ sudo kubectl create -f service.yml
-
-2) validate replication controller and replica set resource differences.
-
-  $ kubectl describe <replication controller id>
-  $ kubectl describe <replica set id>
-
-3) make changes to deployment.yml file in image / replicas / label  and validate by deploying the resource.
-
-  $ kubectl create -f deployment.yml
-  $ kubectl apply -f deployment.yml
+    app: local-web
+  type: NodePort
 
 
+### now validate the service on port number 32000 on the node network
+
+$ kubectl describe service/local-web --namespace=webapp
+
+$ curl localhost:32000

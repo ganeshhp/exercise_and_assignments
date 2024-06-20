@@ -1,87 +1,30 @@
-Exercise-3
-1) kubectl commands to deploy resources imperatively.
+### Exercise-3
 
-  $ kubectl run webserver --image=httpd:latest 
+### Cron-Job
 
-## describe the POD with describe command option
+### create a file cron-job.yml and append below code to it
 
-  $ sudo kubectl describe pod/webserver
-  $ sudo kubectl edit pod/webserver
-
-## make changes the image value and set it to httpd:2.4.57
-## save the file and redescribe
-## save the file inside VI editor with key combination: ESC + : + wq!
-
-  $ sudo kubectl describe pod/webserver
-
-  $ sudo kubectl delete pod/webserver
-
-  $ sudo kubectl run webserver --image=httpd:latest --dry-run=client -o yaml > pod.yaml
-
-  $ kubectl create -f pod.yaml
-
-  $ nano pod.yaml
-
-  #  make changes to Label, and image to httpd:2.4.57
-
-  $ kubectl apply -f pod.yaml
-
-2) create ReplicationController object with manifest file
-
-  a) create a file as rc.yml
-  b) copy the below contents,
-  
-apiVersion: v1
-kind: ReplicationController
+apiVersion: batch/v1
+kind: CronJob
 metadata:
-  name: hello-apache-rc
+  name: test-cronjob
 spec:
-  replicas: 5
-  selector:
-    app: hello-apache
-  template:
-    metadata:
-      labels:
-        app: hello-apache
+  schedule: "* * * * *"
+  startingDeadlindSeconds: 30
+  concurrencyPolicy: Allow
+  successfulJobsHistoryLimit: 5
+  failedJobsHistoryLimit: 2
+  jobTemplate:
     spec:
-      containers:
-      - name: hello-apache-pod
-        image: httpd:latest
-        ports:
-        - containerPort: 80
-
-$ sudo kubectl create -f rc.yml
-
-3) deploy deployment object imperatively...
-
-$ sudo kubectl create deployment webserver-deploy --image=httpd:2.4 --replicas=2 --dry-run=client -o yaml > deployment.yml
-
-## edit the newly created file and add the Strategy declaration in the deployment object.
-
-minReadySeconds: 10
-strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxUnavailable: 1
-      maxSurge: 1
-
-## save and exit and deploy the object.
-
-$ kubectl create -f deployment.yml 
-
-## edit the deployment file and change the image version
-
-$ sudo kubectl apply -f deployment.yml
-
-5) deploy resources declaratively
-
-   $ kubectl create -f pod.yml
-   $ kubectl apply -f pod.yml
-
-   $ kubectl create -f deployment.yml
-   $ kubectl apply -f deployment.yml
-
-6) validate manifest changes
-   $ kubectl diff -f pod.yml
+      template:
+        spec:
+          containers:
+          - name: hello
+            image: ubuntu:22.04
+            command:
+            - /bin/sh
+            - -c
+            - date; echo Hello from the Kubernetes cluster
+          restartPolicy: OnFailure
 
 
