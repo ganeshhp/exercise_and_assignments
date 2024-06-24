@@ -30,7 +30,7 @@ spec:
     - ReadWriteMany
   storageClassName: nfs
   nfs:
-    server: <nfs-server-ip-address>
+    server: 172.31.14.149
     path: "/mnt/nfs_share"
 
 
