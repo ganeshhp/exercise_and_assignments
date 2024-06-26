@@ -1,0 +1,115 @@
+## let's first investigate the etcd configuration
+
+$ kubectl describe pod <etcd-pod-name> -n kube-system
+
+### note here the IP address of the etcd POD is on the Node network.
+### note the etcd version
+
+### note the commands that are launched when the container is started
+### note the --listen address and port number
+### note the volume mounts and volume declaration as hostpath pointing to the local host. path, i.e. the control plane server.
+
+## lookat the YAML file at,
+
+$ sudo more /etc/kubernetes/manifests/etcd.yaml
+
+## get the runtime value from using the command 'ps -aux | grep etcd'. the process etcd is running on the node network.
+
+$ ps -aux | grep etcd
+
+### let's download the etcdctl binary. first check what version of etcd is present on the cluster and accordingly select the etcdctl binary version.
+
+## get the version info,
+
+$ kubectl exec -it <etcd-pod-name> -n kube-system -- /bin/sh -c 'ETCDCTL_API=3 /usr/local/bin/etcd --version' | head
+
+$ export RELEASE="3.5.12"
+
+### download the binary from the GitHub.com
+
+$ wget https://github.com/etcd-io/etcd/releases/download/v${RELEASE}/etcd-v${RELEASE}-linux-amd64.tar.gz
+
+## extract the tar file.
+
+$ tar -zxvf etcd-v${RELEASE}-linux-amd64.tar.gz
+
+## move into the extracted folder directory
+
+$ cd etcd-v${RELEASE}-linux-amd64 
+
+## copy the binary.
+
+$ sudo cp etcdctl /usr/local/bin
+
+## test command
+
+$ ETCDCTL_API=3 etcdctl --help | head
+
+$ kubectl create secret generic test-secret \
+  --from-literal=username='svcaccount' \
+  --from-literal=password='S0methingStrong!'
+
+### let's get the etcd database backed-up.
+## let's first verify that we are connecting to the right server
+
+$ ENDPOINT=https://127.0.0.1:2379
+
+$ sudo ETCDCTL_API=3 etcdctl --endpoints=$ENDPOINT \
+  --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+  --cert=/etc/kubernetes/pki/etcd/server.crt \
+  --key=/etc/kubernetes/pki/etcd/server.key \
+   member list
+
+### let start the snapshot backup
+
+$ sudo ETCDCTL_API=3 etcdctl --endpoints=$ENDPOINT \
+  --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+  --cert=/etc/kubernetes/pki/etcd/server.crt \
+  --key=/etc/kubernetes/pki/etcd/server.key \
+  snapshot save /var/lib/dat-backup.db
+
+### now we will delete the secret object we had created.
+
+$ kubectl delete secret test-secret
+
+## let's validate if the snapshot has completed successfully
+
+$ sudo ETCDCTL_API=3 etcdctl --write-out=table snapshot status /var/lib/dat-backup.db
+
+###  now let's run the restore from the backed-up file to a temporary location.
+
+$ sudo ETCDCTL_API=3 etcdctl snapshot restore /var/lib/dat-backup.db
+
+## check the default.etcd folder
+
+## before we move the restored etcd database to /var/lib/etcd we have to rename the existing copy of etcd db as a quick backup incase of failure.
+
+$ sudo mv /var/lib/etcd /var/lib/etcd.old
+
+## get  the container ID from the etcd pod.
+
+$ sudo crictl --runtime-endpoint unix:///run/containerd/containerd.sock ps
+
+### Add the container id to a variable.
+
+$ CONTAINER_ID=$(sudo crictl --runtime-endpoint unix:///run/containerd/containerd.sock ps | grep etcd | awk '{ print $1 }')
+
+$ echo $CONTAINER_ID
+
+### Now stop the ETCD container before we move the restored data.
+
+$ sudo crictl --runtime-endpoint unix:///run/containerd/containerd.sock stop $CONTAINER_ID
+
+$ sudo mv ./default.etcd /var/lib/etcd
+
+## wait for the etcd container to start and validate the same.
+
+## test if you are able to list the secret that we had deleted after backing up the etcd datastore..
+
+### along with the method that we used for restoring the data directory we can also set the etcdctl to point to a different data directory.
+
+$ sudo ETCDCTL_API=3 etcdctl snapshot restore /var/lib/dat-backup.db --data-dir=/var/lib/etcd-restore
+
+### after we restore it to a location, we will have alter the etcd.yaml file so that the mount_path starts pointing to new location.
+
+$ sudo nano /etc/kubernetes/manifests/etcd.yaml

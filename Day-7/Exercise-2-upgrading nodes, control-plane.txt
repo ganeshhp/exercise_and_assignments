@@ -1,0 +1,73 @@
+### upgrade process for Control-plane node
+## mark the service kubeadm unhold
+
+$ sudo apt-mark unhold kubeadm
+
+$ sudo apt-get update
+
+## list the package priorities and distribution pattern
+
+$ sudo apt-cache policy kubeadm
+
+## install the upgraded version of kubeadm service
+
+$ sudo apt-get install kubeadm=$TARGET_VERSION
+
+## mark the kubeadm on hold
+
+$ sudo apt-mark hold kubeadm
+
+## drain all Pods from the Control -lan marking the control plane node as cordoned.
+
+$ kubectl cordon cp-2
+
+$ kubectl drain <control-plan-node-name> --ignore-daemonsets
+
+$ kubectl get pods -n kube-system
+
+### note the Pods and status.
+
+## run the upgrade plan got control-plane service
+
+$ sudo kubeadm upgrade plan
+
+## apply the upgrade for control-plane service.
+
+$ sudo kubeadm upgrade apply v$TARGET_VERSION
+
+$ kubectl uncordon cp-2
+--------------
+
+### upgrade process for Worker nodes.
+
+## follow similar steps as what we have followed for control-plane
+
+$ kubectl drain node-1 --ignore-daemonsets
+
+$ sudo apt-mark unhold kubeadm
+
+$ sudo apt-get update
+
+## list the package priorities and distribution pattern
+
+$ sudo apt-cache policy kubeadm
+
+## install the upgraded version of kubeadm service
+
+$ sudo apt-get install kubeadm=$TARGET_VERSION
+
+## mark the kubeadm on hold
+
+$ sudo apt-mark hold kubeadm
+
+$ sudo kubeadm upgrade node1
+$ sudo apt-mark unhold kubectl kubelet
+
+$ sudo apt-get update
+
+$ sudo apt-get install -y kubelet=$TARGET_VERSION kubectl=$TARGET_VERSION
+
+$ sudo apt-mark hold kubectl kubelet
+
+$ kubectl uncordon node-1
+

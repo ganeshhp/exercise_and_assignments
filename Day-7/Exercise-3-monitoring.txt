@@ -1,0 +1,14 @@
+$ wget https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.3.6/components.yaml
+
+### add below lines into container arguments on line 90
+
+## - --kubelet-insecure-tls
+## - --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname
+
+$ kubectl apply -f components.yaml
+
+------------------------
+
+## Installing Prometheus using HELM charts
+
+$ curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
